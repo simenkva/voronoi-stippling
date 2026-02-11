@@ -3,7 +3,7 @@
 A browser-based Voronoi stippling tool that turns images into dot patterns using weighted sampling and iterative relaxation.
 
 ## Features
-- Drag-and-drop or load images (plus a built-in Einstein image).
+- Drag-and-drop or load images (plus a built-in shaded ball image).
 - Control dot count, iterations, sampling density, gamma, and relaxation strength.
 - Toggle inversion and source preview.
 - Export the result as SVG or PNG.

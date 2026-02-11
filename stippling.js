@@ -84,9 +84,9 @@
       rebuildImage();
     };
     img.onerror = () => {
-      setStatus("Could not load einstein.jpg", true);
+      setStatus("Could not load shaded ball.png", true);
     };
-    img.src = "einstein.jpg";
+    img.src = "shaded ball.png";
   }
 
   function handleFile(file) {
