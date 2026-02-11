@@ -3,7 +3,6 @@
 
   const ui = {
     fileInput: document.getElementById("fileInput"),
-    btnDemo: document.getElementById("btnDemo"),
     btnRun: document.getElementById("btnRun"),
     btnStep: document.getElementById("btnStep"),
     btnReset: document.getElementById("btnReset"),
@@ -412,7 +411,6 @@
   function init() {
     updateLabels();
     setStatus("Idle", false);
-    ui.btnDemo.addEventListener("click", drawDemo);
     ui.fileInput.addEventListener("change", (e) => handleFile(e.target.files[0]));
 
     ui.btnRun.addEventListener("click", startRun);
