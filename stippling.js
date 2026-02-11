@@ -204,7 +204,97 @@
       state.pointsX[i] = x;
       state.pointsY[i] = y;
     }
+    enforceMinSeparation();
     state.iteration = 0;
+  }
+
+  function enforceMinSeparation() {
+    if (!state.pointsX || !state.width || !state.height) return;
+    const dotSize = parseFloat(ui.dotSize.value);
+    if (!(dotSize > 0)) return;
+    const minDist = dotSize + 0.25;
+    const n = state.pointsX.length;
+    if (n < 2) return;
+
+    const avgArea = (state.width * state.height) / n;
+    const dotArea = Math.PI * Math.pow(dotSize * 0.5, 2);
+    if (dotArea > avgArea && !state.running) {
+      setStatus("Dot size too large for dot count; overlaps likely.", true);
+    }
+
+    const cellSize = minDist;
+    const gridW = Math.max(1, Math.ceil(state.width / cellSize));
+    const gridH = Math.max(1, Math.ceil(state.height / cellSize));
+    const grid = Array.from({ length: gridW * gridH }, () => []);
+    const ptsX = state.pointsX;
+    const ptsY = state.pointsY;
+
+    for (let i = 0; i < n; i++) {
+      const cx = Math.min(gridW - 1, Math.max(0, Math.floor(ptsX[i] / cellSize)));
+      const cy = Math.min(gridH - 1, Math.max(0, Math.floor(ptsY[i] / cellSize)));
+      grid[cx + cy * gridW].push(i);
+    }
+
+    const dispX = new Float32Array(n);
+    const dispY = new Float32Array(n);
+    const minDistSq = minDist * minDist;
+
+    for (let i = 0; i < n; i++) {
+      const x = ptsX[i];
+      const y = ptsY[i];
+      const cx = Math.min(gridW - 1, Math.max(0, Math.floor(x / cellSize)));
+      const cy = Math.min(gridH - 1, Math.max(0, Math.floor(y / cellSize)));
+      const x0 = Math.max(0, cx - 1);
+      const x1 = Math.min(gridW - 1, cx + 1);
+      const y0 = Math.max(0, cy - 1);
+      const y1 = Math.min(gridH - 1, cy + 1);
+
+      for (let gy = y0; gy <= y1; gy++) {
+        for (let gx = x0; gx <= x1; gx++) {
+          const cell = grid[gx + gy * gridW];
+          for (let k = 0; k < cell.length; k++) {
+            const j = cell[k];
+            if (j <= i) continue;
+            const dx = x - ptsX[j];
+            const dy = y - ptsY[j];
+            const distSq = dx * dx + dy * dy;
+            if (distSq >= minDistSq) continue;
+
+            if (distSq < 1e-10) {
+              const angle = Math.random() * TAU;
+              const push = minDist * 0.5;
+              const px = Math.cos(angle) * push;
+              const py = Math.sin(angle) * push;
+              dispX[i] += px;
+              dispY[i] += py;
+              dispX[j] -= px;
+              dispY[j] -= py;
+              continue;
+            }
+
+            const dist = Math.sqrt(distSq);
+            const push = (minDist - dist) / dist * 0.5;
+            const px = dx * push;
+            const py = dy * push;
+            dispX[i] += px;
+            dispY[i] += py;
+            dispX[j] -= px;
+            dispY[j] -= py;
+          }
+        }
+      }
+    }
+
+    for (let i = 0; i < n; i++) {
+      let x = ptsX[i] + dispX[i];
+      let y = ptsY[i] + dispY[i];
+      if (x < 0) x = 0;
+      else if (x > state.width) x = state.width;
+      if (y < 0) y = 0;
+      else if (y > state.height) y = state.height;
+      ptsX[i] = x;
+      ptsY[i] = y;
+    }
   }
 
   function stepIteration() {
@@ -254,6 +344,7 @@
         ptsY[i] = y;
       }
     }
+    enforceMinSeparation();
     state.iteration += 1;
   }
 
@@ -432,6 +523,10 @@
     ui.samples.addEventListener("input", updateLabels);
     ui.dotSize.addEventListener("input", () => {
       updateLabels();
+      draw();
+    });
+    ui.dotSize.addEventListener("change", () => {
+      enforceMinSeparation();
       draw();
     });
     ui.gamma.addEventListener("input", () => {
