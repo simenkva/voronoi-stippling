@@ -79,27 +79,15 @@
   }
 
   function drawDemo() {
-    const w = 640;
-    const h = 480;
-    srcCanvas.width = w;
-    srcCanvas.height = h;
-    const g = srcCtx.createLinearGradient(0, 0, w, h);
-    g.addColorStop(0, "#111111");
-    g.addColorStop(1, "#ffffff");
-    srcCtx.fillStyle = g;
-    srcCtx.fillRect(0, 0, w, h);
-    srcCtx.fillStyle = "rgba(255,255,255,0.85)";
-    srcCtx.beginPath();
-    srcCtx.arc(w * 0.5, h * 0.4, Math.min(w, h) * 0.22, 0, TAU);
-    srcCtx.fill();
-    srcCtx.fillStyle = "rgba(0,0,0,0.75)";
-    srcCtx.fillRect(w * 0.2, h * 0.65, w * 0.6, h * 0.18);
     const img = new Image();
     img.onload = () => {
       state.img = img;
       rebuildImage();
     };
-    img.src = srcCanvas.toDataURL();
+    img.onerror = () => {
+      setStatus("Could not load einstein.jpg", true);
+    };
+    img.src = "einstein.jpg";
   }
 
   function handleFile(file) {
